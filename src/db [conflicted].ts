@@ -1,13 +1,9 @@
 // src/db.ts
 // Database utility functions for Vibes polling app
-// Handles all Firestore operations for questions, responses, and user context
+// Handles all Firestore operations for questions and responses
 
-import { collection, addDoc, serverTimestamp, doc, setDoc } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from './firebase';
-
-// ============================================================================
-// QUESTIONS
-// ============================================================================
 
 // Question types supported by the app
 export type QuestionType = 'single' | 'rating' | 'numeric' | 'date';
@@ -25,15 +21,38 @@ export interface Question {
 
 /**
  * Creates a new question in Firestore
+ *
+ * @param uid - The user ID of the question creator
+ * @param payload - Question data (text, type, and type-specific fields)
+ * @returns Promise with the document reference
+ *
+ * @example
+ * // Single choice question
+ * await createQuestion('user123', {
+ *   text: 'What is your favorite color?',
+ *   type: 'single',
+ *   options: ['Red', 'Blue', 'Green']
+ * });
+ *
+ * @example
+ * // Rating question
+ * await createQuestion('user123', {
+ *   text: 'How would you rate this movie?',
+ *   type: 'rating',
+ *   min: 1,
+ *   max: 5
+ * });
  */
 export async function createQuestion(
   uid: string,
   payload: Omit<Question, 'createdBy' | 'createdAt'>
 ): Promise<string> {
+  // Validate that text is provided
   if (!payload.text || payload.text.trim().length === 0) {
     throw new Error('Question text is required');
   }
 
+  // Validate type-specific requirements
   if (payload.type === 'single') {
     if (!payload.options || payload.options.length === 0) {
       throw new Error('Options are required for single choice questions');
@@ -49,6 +68,7 @@ export async function createQuestion(
     }
   }
 
+  // Build the question document
   const question: Question = {
     text: payload.text.trim(),
     type: payload.type,
@@ -59,34 +79,9 @@ export async function createQuestion(
     ...(payload.max !== undefined && { max: payload.max })
   };
 
+  // Add to Firestore /questions collection
   const docRef = await addDoc(collection(db, 'questions'), question);
+
   console.log('[db] ✅ Question created:', docRef.id);
   return docRef.id;
-}
-
-// ============================================================================
-// USER CONTEXT & ONBOARDING
-// ============================================================================
-
-export interface UserContext {
-  age?: number | null;
-  city?: string | null;
-}
-
-/**
- * Save user context data to Firestore
- */
-export async function saveContext(uid: string, data: UserContext): Promise<void> {
-  const contextRef = doc(db, "context", uid);
-  await setDoc(contextRef, data, { merge: true });
-  console.log("[db] ✅ Context saved successfully for user:", uid);
-}
-
-/**
- * Mark user's onboarding as complete
- */
-export async function markOnboardingDone(uid: string): Promise<void> {
-  const metaRef = doc(db, "users", uid, "meta", "main");
-  await setDoc(metaRef, { onboardingDone: true }, { merge: true });
-  console.log("[db] ✅ Onboarding marked complete for user:", uid);
 }
