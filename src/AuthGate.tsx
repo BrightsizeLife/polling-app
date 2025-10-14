@@ -1,5 +1,5 @@
 // src/AuthGate.tsx
-// Authentication gatekeeper component for Daily Task Manager
+// Authentication gatekeeper component for Vibes
 // This component handles all user authentication including Google OAuth and email/password
 // Only renders the main app content when user is successfully authenticated
 
@@ -294,7 +294,7 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
             color: '#64748b',
             marginBottom: '12px'
           }}>
-            🔐 Loading Daily Task Manager...
+            ✨ Loading Vibes...
           </div>
           <div style={{
             width: '32px',
@@ -337,14 +337,14 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
               color: '#1f2937',
               margin: '0 0 8px 0'
             }}>
-              📋 Daily Task Manager
+              ✨ Vibes
             </h1>
             <p style={{
               color: '#6b7280',
               margin: 0,
               fontSize: '14px'
             }}>
-              Sign in to manage your daily tasks
+              Sign in to create polls and gauge the vibe
             </p>
           </div>
 

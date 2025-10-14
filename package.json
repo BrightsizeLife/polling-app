@@ -1,7 +1,7 @@
 {
-  "name": "polling-app",
+  "name": "vibes",
   "version": "0.1.0",
-  "description": "A modern polling application",
+  "description": "Vibes - A modern polling app to gauge the vibe",
   "type": "module",
   "scripts": {
     "dev": "vite",
