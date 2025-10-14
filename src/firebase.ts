@@ -1,5 +1,5 @@
 // src/firebase.ts
-// Firebase configuration and initialization for Daily Task Manager
+// Firebase configuration and initialization for Vibes
 // This file sets up Firebase Auth, Firestore, and Google OAuth provider
 import { initializeApp } from "firebase/app";
 import {
@@ -50,6 +50,6 @@ setPersistence(auth, browserLocalPersistence).catch((error) => {
   console.warn("⚠️ Auth persistence setup failed (fallback to session):", error?.message || error);
 });
 
-console.log("✅ Firebase initialized successfully");
+console.log("✅ Vibes: Firebase initialized successfully");
 console.log("📱 Project ID:", firebaseConfig.projectId);
 console.log("🔐 Google OAuth provider configured with enhanced scopes");
