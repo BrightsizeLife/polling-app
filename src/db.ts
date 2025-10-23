@@ -2,12 +2,17 @@
 // Database utility functions for Vibes polling app
 // Handles all Firestore operations for questions, responses, and user context
 
-import { collection, addDoc, serverTimestamp, doc, setDoc } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, doc, setDoc, query, where, orderBy, limit, getDocs, getDoc } from 'firebase/firestore';
 import { db } from './firebase';
 
 // ============================================================================
 // QUESTIONS
 // ============================================================================
+
+// Normalize question text for duplicate detection
+function normalizeQuestion(text: string): string {
+  return text.toLowerCase().replace(/[^\w\s]/g, '').replace(/\s+/g, ' ').trim();
+}
 
 // Question types supported by the app
 export type QuestionType = 'single' | 'rating' | 'numeric' | 'date';
@@ -59,9 +64,53 @@ export async function createQuestion(
     ...(payload.max !== undefined && { max: payload.max })
   };
 
-  const docRef = await addDoc(collection(db, 'questions'), question);
+  const docRef = await addDoc(collection(db, 'questions'), {
+    ...question,
+    status: 'draft',
+    norm: normalizeQuestion(payload.text)
+  });
   console.log('[db] ✅ Question created:', docRef.id);
   return docRef.id;
+}
+
+/**
+ * Fetch approved questions (for Explore feed)
+ */
+export async function getApprovedQuestions(maxResults: number = 50): Promise<any[]> {
+  const q = query(
+    collection(db, 'questions'),
+    where('status', '==', 'approved'),
+    orderBy('createdAt', 'desc'),
+    limit(maxResults)
+  );
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+}
+
+/**
+ * Submit a response to a question
+ */
+export async function submitResponse(questionId: string, uid: string, value: any): Promise<void> {
+  const responseRef = doc(db, `questions/${questionId}/responses/${uid}`);
+  await setDoc(responseRef, { value, answeredAt: serverTimestamp() });
+  console.log('[db] ✅ Response submitted:', questionId);
+}
+
+/**
+ * Get all responses for a question (to calculate results)
+ */
+export async function getResponses(questionId: string): Promise<any[]> {
+  const snapshot = await getDocs(collection(db, `questions/${questionId}/responses`));
+  return snapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() }));
+}
+
+/**
+ * Check if user has answered a question
+ */
+export async function hasAnswered(questionId: string, uid: string): Promise<boolean> {
+  const responseRef = doc(db, `questions/${questionId}/responses/${uid}`);
+  const snapshot = await getDoc(responseRef);
+  return snapshot.exists();
 }
 
 // ============================================================================

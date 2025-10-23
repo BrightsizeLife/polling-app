@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import CreateQuestion from './questions/CreateQuestion';
+import ExploreQuestions from './questions/ExploreQuestions';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<'ask' | 'explore' | 'you'>('ask');
@@ -53,15 +54,7 @@ export default function App() {
       <div style={{ padding: '20px 0' }}>
         {activeTab === 'ask' && <CreateQuestion />}
 
-        {activeTab === 'explore' && (
-          <div style={{ maxWidth: '600px', margin: '0 auto', padding: '24px', textAlign: 'center', color: '#6b7280' }}>
-            <div style={{ fontSize: '48px', marginBottom: '16px' }}>🔍</div>
-            <h2 style={{ fontSize: '20px', fontWeight: '600', color: '#1f2937', marginBottom: '8px' }}>
-              Explore Feed Coming Soon
-            </h2>
-            <p style={{ margin: 0 }}>Discover and answer questions from the community</p>
-          </div>
-        )}
+        {activeTab === 'explore' && <ExploreQuestions />}
 
         {activeTab === 'you' && (
           <div style={{ maxWidth: '600px', margin: '0 auto', padding: '24px' }}>
