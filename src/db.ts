@@ -9,6 +9,11 @@ import { db } from './firebase';
 // QUESTIONS
 // ============================================================================
 
+// Normalize question text for duplicate detection
+function normalizeQuestion(text: string): string {
+  return text.toLowerCase().replace(/[^\w\s]/g, '').replace(/\s+/g, ' ').trim();
+}
+
 // Question types supported by the app
 export type QuestionType = 'single' | 'rating' | 'numeric' | 'date';
 
@@ -59,7 +64,11 @@ export async function createQuestion(
     ...(payload.max !== undefined && { max: payload.max })
   };
 
-  const docRef = await addDoc(collection(db, 'questions'), { ...question, status: 'draft' });
+  const docRef = await addDoc(collection(db, 'questions'), {
+    ...question,
+    status: 'draft',
+    norm: normalizeQuestion(payload.text)
+  });
   console.log('[db] ✅ Question created:', docRef.id);
   return docRef.id;
 }
